@@ -33,10 +33,14 @@ class HadoopGroupProvider extends GroupProvider with Logging {
     groups(user, sessionConf).head
 
   override def groups(user: String, sessionConf: JMap[String, String]): Array[String] =
-    UserGroupInformation.createRemoteUser(user).getGroupNames match {
-      case Array() =>
-        warn(s"There is no group for $user, use the client user name as group directly")
-        Array(user)
-      case groups => groups
+    if (user.equals("anonymous")) {
+      Array(user)
+    } else {
+      UserGroupInformation.createRemoteUser(user).getGroupNames match {
+        case Array() =>
+          warn(s"There is no group for $user, use the client user name as group directly")
+          Array(user)
+        case groups => groups
+      }
     }
 }
